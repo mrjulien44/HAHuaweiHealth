@@ -96,6 +96,27 @@ from custom_components.huawei_health.api import HuaweiHealthApiClient
 
 
 class HuaweiHealthApiClientPayloadModelTest(unittest.TestCase):
+    def test_unwrap_payload_envelope(self):
+        client = HuaweiHealthApiClient(
+            username="demo",
+            password="demo",
+            country="global",
+            region="global",
+            account_id="acct-123",
+        )
+
+        payload = {
+            "data": {
+                "profile": {
+                    "username": "demo",
+                    "account_id": "acct-123",
+                }
+            }
+        }
+
+        unwrapped = client._unwrap_huawei_payload(payload)
+        self.assertEqual(unwrapped.get("profile", {}).get("username"), "demo")
+
     def test_build_data_from_real_payload(self):
         client = HuaweiHealthApiClient(
             username="demo",

@@ -29,6 +29,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         country=entry.data.get("country", "global"),
         region=entry.data.get("region", "global"),
         account_id=entry.data.get("account_id"),
+        client_id=entry.data.get("client_id"),
+        client_secret=entry.data.get("client_secret"),
+        access_token=entry.data.get("access_token"),
+        refresh_token=entry.data.get("refresh_token"),
     )
 
     coordinator = HuaweiHealthDataCoordinator(hass, client)

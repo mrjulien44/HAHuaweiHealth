@@ -1,0 +1,30 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Conectar Huawei Health",
+        "description": "Proporcione la información obligatoria de la cuenta necesaria para conectarse a Huawei Health. Antes de continuar, abra la aplicación Huawei Health y permita el acceso a Health Kit para sus datos de actividad, perfil, sueño, estrés y composición corporal.",
+        "data": {
+          "username": "Usuario de Huawei Health",
+          "password": "Contraseña de Huawei Health",
+          "country": "Código del país",
+          "region": "Región",
+          "account_id": "ID de la cuenta"
+        }
+      },
+      "healthkit": {
+        "title": "Permiso Health Kit de Huawei Health",
+        "description": "El acceso a Health Kit aún no está autorizado en la aplicación Huawei Health. Abra la aplicación Huawei Health, permita el acceso a Health Kit para los ámbitos de datos solicitados y luego continúe con la configuración."
+      }
+    },
+    "error": {
+      "cannot_connect": "No se pudo conectar",
+      "invalid_auth": "Autenticación no válida",
+      "unknown": "Error inesperado",
+      "healthkit_not_authorized": "El acceso a Health Kit no está autorizado en la aplicación Huawei Health"
+    },
+    "abort": {
+      "already_configured": "Esta cuenta ya está configurada"
+    }
+  }
+}

@@ -38,6 +38,8 @@ class HuaweiHealthConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 country=user_input.get("country", "global"),
                 region=user_input.get("region", "global"),
                 account_id=user_input.get("account_id"),
+                client_id=user_input.get("client_id"),
+                client_secret=user_input.get("client_secret"),
             )
             self._user_input = user_input
 
@@ -58,6 +60,8 @@ class HuaweiHealthConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     vol.Required("country", default="global"): str,
                     vol.Required("region", default="global"): str,
                     vol.Required("account_id"): str,
+                    vol.Optional("client_id"): str,
+                    vol.Optional("client_secret"): str,
                 }
             ),
             errors=errors,
@@ -75,6 +79,8 @@ class HuaweiHealthConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 country=self._user_input.get("country", "global"),
                 region=self._user_input.get("region", "global"),
                 account_id=self._user_input.get("account_id"),
+                client_id=self._user_input.get("client_id"),
+                client_secret=self._user_input.get("client_secret"),
             )
             if await client.async_get_health_app_authorization():
                 return self.async_create_entry(

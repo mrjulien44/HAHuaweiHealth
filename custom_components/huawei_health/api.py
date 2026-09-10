@@ -51,7 +51,10 @@ class HuaweiHealthApiClient:
         account_id: str | None,
         access_token: str | None = None,
         refresh_token: str | None = None,
+        client_id: str | None = None,
+        client_secret: str | None = None,
         base_url: str = "https://openapi.huawei.com",
+        token_url: str = "https://oauth-login.cloud.huawei.com/oauth2/v3/token",
     ):
         self.username = username
         self.password = password
@@ -60,7 +63,10 @@ class HuaweiHealthApiClient:
         self.account_id = account_id
         self.access_token = access_token or os.getenv("HUAWEI_HEALTH_ACCESS_TOKEN")
         self.refresh_token = refresh_token or os.getenv("HUAWEI_HEALTH_REFRESH_TOKEN")
+        self.client_id = client_id or os.getenv("HUAWEI_HEALTH_CLIENT_ID")
+        self.client_secret = client_secret or os.getenv("HUAWEI_HEALTH_CLIENT_SECRET")
         self.base_url = base_url
+        self.token_url = token_url
 
     @staticmethod
     def _parse_int(value: Any, default: int = 0) -> int:
@@ -91,6 +97,23 @@ class HuaweiHealthApiClient:
         except (TypeError, ValueError):
             return None
 
+    def _unwrap_huawei_payload(self, payload: dict[str, Any]) -> dict[str, Any]:
+        """Normalize Huawei API envelopes such as {result: {...}} and {data: {...}}.
+
+        Many Huawei samples and documentation pages wrap the actual payload in a
+        top-level result or data object. This helper unwraps those envelopes before
+        the model conversion runs.
+        """
+        if not isinstance(payload, dict):
+            return {}
+
+        for key in ("result", "data", "profile", "health_profile"):
+            value = payload.get(key)
+            if isinstance(value, dict):
+                return value
+
+        return payload
+
     def _build_huawei_health_data(self, payload: dict[str, Any]) -> HuaweiHealthData:
         """Transform a real Huawei Health-style payload into the typed aggregate model.
 
@@ -99,6 +122,8 @@ class HuaweiHealthApiClient:
         summary, statistics and activity/event keys from the Huawei Health sample
         documentation collection and normalizes them into the repository model.
         """
+        payload = self._unwrap_huawei_payload(payload)
+
         profile_payload = (
             payload.get("profile")
             or payload.get("user_profile")
@@ -251,17 +276,131 @@ class HuaweiHealthApiClient:
         _LOGGER.debug("Validating Huawei Health credentials for account %s", self.account_id)
         return True
 
-    async def async_get_health_app_authorization(self) -> bool:
-        """Return whether Huawei Health Health Kit access is granted for this account.
+    async def async_get_oauth_token(self) -> dict[str, str] | None:
+        """Acquire a Huawei OAuth access token from the configured client credentials.
 
-        The real implementation should confirm Huawei Health app Health Kit access for
-        the requested scopes. This repository offers a real adapter shell with an
-        authorization endpoint probe and a compatibility sample fallback.
+        The code uses the standard password grant style shape used by many Huawei
+        developer examples and then stores the returned bearer token in the client
+        instance for subsequent profile and payload calls.
+        """
+        if not self.client_id or not self.client_secret:
+            _LOGGER.debug("No Huawei OAuth client credentials supplied for token acquisition")
+            return None
+
+        data = {
+            "grant_type": "password",
+            "username": self.username,
+            "password": self.password,
+            "client_id": self.client_id,
+            "client_secret": self.client_secret,
+            "scope": "https://www.huawei.com/auth/health",
+        }
+
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.post(
+                    self.token_url,
+                    data=data,
+                    headers={"Content-Type": "application/x-www-form-urlencoded"},
+                    timeout=aiohttp.ClientTimeout(total=30),
+                ) as response:
+                    if response.status != 200:
+                        _LOGGER.warning("Huawei OAuth token endpoint returned status %s", response.status)
+                        return None
+                    token_payload = await response.json()
+
+        except Exception as exc:
+            _LOGGER.warning("Failed to reach Huawei OAuth token endpoint: %s", exc)
+            return None
+
+        access_token = token_payload.get("access_token")
+        refresh_token = token_payload.get("refresh_token")
+        if not access_token:
+            _LOGGER.warning("Huawei OAuth token response did not include an access_token")
+            return None
+
+        self.access_token = access_token
+        self.refresh_token = refresh_token or self.refresh_token
+        return {"access_token": access_token, "refresh_token": refresh_token or ""}
+
+    async def async_refresh_oauth_token(self) -> dict[str, str] | None:
+        """Refresh a Huawei OAuth access token when a refresh token is known."""
+        if not self.refresh_token or not self.client_id or not self.client_secret:
+            return None
+
+        data = {
+            "grant_type": "refresh_token",
+            "refresh_token": self.refresh_token,
+            "client_id": self.client_id,
+            "client_secret": self.client_secret,
+        }
+
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.post(
+                    self.token_url,
+                    data=data,
+                    headers={"Content-Type": "application/x-www-form-urlencoded"},
+                    timeout=aiohttp.ClientTimeout(total=30),
+                ) as response:
+                    if response.status != 200:
+                        _LOGGER.warning("Huawei token refresh endpoint returned status %s", response.status)
+                        return None
+                    token_payload = await response.json()
+        except Exception as exc:
+            _LOGGER.warning("Failed to refresh Huawei OAuth token: %s", exc)
+            return None
+
+        access_token = token_payload.get("access_token")
+        refresh_token = token_payload.get("refresh_token")
+        if not access_token:
+            return None
+
+        self.access_token = access_token
+        self.refresh_token = refresh_token or self.refresh_token
+        return {"access_token": access_token, "refresh_token": refresh_token or self.refresh_token}
+
+    async def async_get_health_app_authorization(self) -> bool:
+        """Probe the Huawei Health profile endpoint to determine whether Health Kit scopes are usable.
+
+        This repository now performs a real bearer-style authorization probe instead of
+        returning True purely because a token string exists. It attempts a token exchange
+        when client credentials are available and then evaluates the HTTP outcome of the
+        protected Huawei Health profile API.
         """
         _LOGGER.debug("Checking Health Kit authorization for Huawei Health account %s", self.account_id)
-        if self.access_token:
-            return True
-        return False
+
+        if not self.access_token:
+            token = await self.async_get_oauth_token()
+            if not token:
+                _LOGGER.debug("No Huawei access token available for Health Kit authorization probe")
+                return False
+
+        try:
+            async with aiohttp.ClientSession() as session:
+                headers = {
+                    "Authorization": f"Bearer {self.access_token}",
+                    "Accept": "application/json",
+                    "X-Account-Id": self.account_id or "unknown",
+                    "X-Country": self.country,
+                    "X-Region": self.region,
+                }
+                url = f"{self.base_url.rstrip('/')}/v1/health/profile"
+                async with session.get(
+                    url,
+                    headers=headers,
+                    timeout=aiohttp.ClientTimeout(total=30),
+                ) as response:
+                    if response.status == 200:
+                        return True
+                    if response.status in (401, 403):
+                        _LOGGER.warning("Huawei Health Health Kit authorization denied by the API gateway")
+                        return False
+                    _LOGGER.warning("Huawei Health profile authorization probe returned status %s", response.status)
+                    return False
+        except Exception as exc:
+            _LOGGER.warning("Health Kit authorization probe failed: %s", exc)
+            return False
 
     async def async_fetch_real_payload(self) -> dict[str, Any] | None:
         """Attempt a real Huawei Health payload fetch from the configured endpoint.
@@ -270,7 +409,9 @@ class HuaweiHealthApiClient:
         user has not supplied an access token or the endpoint cannot be reached.
         """
         if not self.access_token:
-            return None
+            token = await self.async_get_oauth_token()
+            if not token:
+                return None
 
         headers = {
             "Authorization": f"Bearer {self.access_token}",
@@ -288,7 +429,7 @@ class HuaweiHealthApiClient:
                         _LOGGER.warning("Huawei Health profile endpoint returned status %s", response.status)
                         return None
                     data = await response.json()
-                    return data
+                    return self._unwrap_huawei_payload(data)
         except Exception as exc:
             _LOGGER.warning("Failed to reach real Huawei Health endpoint: %s", exc)
             return None
