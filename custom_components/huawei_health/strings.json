@@ -1,0 +1,25 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect Huawei Health",
+        "description": "Provide the mandatory account information needed to connect to Huawei Health.",
+        "data": {
+          "username": "Huawei Health username",
+          "password": "Huawei Health password",
+          "country": "Country code",
+          "region": "Region",
+          "account_id": "Account ID"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Failed to connect",
+      "invalid_auth": "Invalid authentication",
+      "unknown": "Unexpected error"
+    },
+    "abort": {
+      "already_configured": "This account is already configured"
+    }
+  }
+}

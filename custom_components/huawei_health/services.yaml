@@ -1,0 +1,14 @@
+# This file can define service descriptions for user-triggered actions such as sync.
+"""
+service: sync_health
+name: Sync Huawei Health
+description: Force an immediate refresh of Huawei Health data.
+fields:
+  account_id:
+    name: Account ID
+    description: Target Huawei Health account ID.
+    example: "123456789"
+    required: false
+    selector:
+      text:
+"""
