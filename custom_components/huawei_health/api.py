@@ -18,10 +18,12 @@ import aiohttp
 from .models import (
     HuaweiHealthActivity,
     HuaweiHealthActivityEvent,
+    HuaweiHealthDailyActivity,
     HuaweiHealthData,
     HuaweiHealthProfile,
     HuaweiHealthStatistics,
     HuaweiHealthSummary,
+    HuaweiHealthWorkoutRecord,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -145,8 +147,31 @@ class HuaweiHealthApiClient:
             or payload.get("period_statistics")
             or {}
         )
+        daily_activities_payload = (
+            payload.get("daily_activities")
+            or payload.get("daily_activity_records")
+            or payload.get("daily_records")
+            or []
+        )
+        workout_records_payload = (
+            payload.get("workout_records")
+            or payload.get("workouts")
+            or payload.get("exercise_records")
+            or payload.get("exercise_sequence_records")
+            or []
+        )
         activities_payload = payload.get("activities") or payload.get("sport_records") or payload.get("records") or []
         events_payload = payload.get("events") or payload.get("calendar_events") or payload.get("activity_events") or []
+
+        if isinstance(daily_activities_payload, dict):
+            daily_activities_payload = daily_activities_payload.get("items", []) or []
+        if not isinstance(daily_activities_payload, list):
+            daily_activities_payload = []
+
+        if isinstance(workout_records_payload, dict):
+            workout_records_payload = workout_records_payload.get("items", []) or []
+        if not isinstance(workout_records_payload, list):
+            workout_records_payload = []
 
         if isinstance(activities_payload, dict):
             activities_payload = activities_payload.get("items", []) or []
@@ -219,6 +244,44 @@ class HuaweiHealthApiClient:
             period_end=statistics_payload.get("period_end") or statistics_payload.get("end_date") or statistics_payload.get("period_end_date"),
         )
 
+        daily_activities = []
+        for item in daily_activities_payload:
+            daily_activities.append(
+                HuaweiHealthDailyActivity(
+                    date=item.get("date") or item.get("day") or item.get("activity_date") or "",
+                    steps=self._parse_int(item.get("steps")),
+                    distance_km=self._parse_float(item.get("distance_km") or item.get("distance")),
+                    calories_kcal=self._parse_int(item.get("calories_kcal") or item.get("calories")),
+                    active_minutes=self._parse_int(item.get("active_minutes")),
+                    metadata=item.get("metadata", {}) or {},
+                )
+            )
+
+        workout_records = []
+        for item in workout_records_payload:
+            start = self._parse_datetime(item.get("start") or item.get("begin_time"))
+            end = self._parse_datetime(item.get("end") or item.get("finish_time"))
+            if start is None or end is None:
+                continue
+            workout_records.append(
+                HuaweiHealthWorkoutRecord(
+                    record_id=item.get("record_id", item.get("activity_id", "")),
+                    activity_type=item.get("activity_type", item.get("type", "workout")),
+                    start=start,
+                    end=end,
+                    duration_min=self._parse_int(item.get("duration_min")),
+                    distance_km=self._parse_float(item.get("distance_km") or item.get("distance")),
+                    calories_kcal=self._parse_int(item.get("calories_kcal") or item.get("calories")),
+                    steps=self._parse_int(item.get("steps")),
+                    average_speed_kmh=self._parse_float(item.get("average_speed_kmh")),
+                    average_pace_min_km=self._parse_float(item.get("average_pace_min_km")),
+                    average_heart_rate_bpm=self._parse_int(item.get("average_heart_rate_bpm") or item.get("heart_rate_bpm")),
+                    max_heart_rate_bpm=self._parse_int(item.get("max_heart_rate_bpm")),
+                    sport_source=item.get("sport_source", "huawei_health"),
+                    metadata=item.get("metadata", {}) or {},
+                )
+            )
+
         activities = []
         for item in activities_payload:
             start = self._parse_datetime(item.get("start"))
@@ -267,6 +330,8 @@ class HuaweiHealthApiClient:
             profile=profile,
             summary=summary,
             activities=activities,
+            daily_activities=daily_activities,
+            workout_records=workout_records,
             statistics=statistics,
             events=events,
         )

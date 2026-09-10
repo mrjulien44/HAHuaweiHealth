@@ -87,6 +87,38 @@ class HuaweiHealthSummary:
 
 
 @dataclass(slots=True)
+class HuaweiHealthDailyActivity:
+    """A Huawei Health daily activity record such as the daily summary payload."""
+
+    date: str
+    steps: int = 0
+    distance_km: float = 0.0
+    calories_kcal: int = 0
+    active_minutes: int = 0
+    metadata: dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass(slots=True)
+class HuaweiHealthWorkoutRecord:
+    """A Huawei Health workout/exercise record carrying a generic sport family field."""
+
+    record_id: str
+    activity_type: str
+    start: datetime
+    end: datetime
+    duration_min: int = 0
+    distance_km: float | None = None
+    calories_kcal: int | None = None
+    steps: int | None = None
+    average_speed_kmh: float | None = None
+    average_pace_min_km: float | None = None
+    average_heart_rate_bpm: int | None = None
+    max_heart_rate_bpm: int | None = None
+    sport_source: str = "huawei_health"
+    metadata: dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass(slots=True)
 class HuaweiHealthActivityEvent:
     """Huawei Health activity or workout event for the calendar model."""
 
@@ -107,5 +139,7 @@ class HuaweiHealthData:
     profile: HuaweiHealthProfile
     summary: HuaweiHealthSummary
     activities: list[HuaweiHealthActivity] = field(default_factory=list)
+    daily_activities: list[HuaweiHealthDailyActivity] = field(default_factory=list)
+    workout_records: list[HuaweiHealthWorkoutRecord] = field(default_factory=list)
     statistics: HuaweiHealthStatistics = field(default_factory=HuaweiHealthStatistics)
     events: list[HuaweiHealthActivityEvent] = field(default_factory=list)

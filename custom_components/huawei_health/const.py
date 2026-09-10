@@ -37,18 +37,15 @@ SENSOR_TYPES = {
         "unit": "kcal",
         "icon": "mdi:fire",
     },
-    "heart_rate": {
-        "key": "heart_rate",
-        "name": "Heart Rate",
-        "unit": "bpm",
-        "icon": "mdi:heart-pulse",
-    },
-    "sleep_duration": {
-        "key": "sleep_duration",
-        "name": "Sleep Duration",
-        "unit": "min",
-        "icon": "mdi:bed",
-    },
+    # The following Huawei Health families require a higher entitlement or
+    # a different project license and are therefore commented out here.
+    # "heart_rate": {"key": "heart_rate", "name": "Heart Rate", "unit": "bpm", "icon": "mdi:heart-pulse"},
+    # "sleep_duration": {"key": "sleep_duration", "name": "Sleep Duration", "unit": "min", "icon": "mdi:bed"},
+    # "sleep_deep": {"key": "sleep_deep", "name": "Sleep Deep", "unit": "min", "icon": "mdi:moon-waning-crescent"},
+    # "sleep_shallow": {"key": "sleep_shallow", "name": "Sleep Shallow", "unit": "min", "icon": "mdi:moon-last-quarter"},
+    # "sleep_dream": {"key": "sleep_dream", "name": "Sleep Dream", "unit": "min", "icon": "mdi:weather-night"},
+    # "stress_score": {"key": "stress_score", "name": "Stress Score", "unit": "score", "icon": "mdi:heart-broken"},
+    # "body_fat_pct": {"key": "body_fat_pct", "name": "Body Fat", "unit": "%", "icon": "mdi:human"},
     "weight": {
         "key": "weight",
         "name": "Weight",
@@ -66,35 +63,5 @@ SENSOR_TYPES = {
         "name": "BMI",
         "unit": "kg/m²",
         "icon": "mdi:body",
-    },
-    "sleep_deep": {
-        "key": "sleep_deep",
-        "name": "Sleep Deep",
-        "unit": "min",
-        "icon": "mdi:moon-waning-crescent",
-    },
-    "sleep_shallow": {
-        "key": "sleep_shallow",
-        "name": "Sleep Shallow",
-        "unit": "min",
-        "icon": "mdi:moon-last-quarter",
-    },
-    "sleep_dream": {
-        "key": "sleep_dream",
-        "name": "Sleep Dream",
-        "unit": "min",
-        "icon": "mdi:weather-night",
-    },
-    "stress_score": {
-        "key": "stress_score",
-        "name": "Stress Score",
-        "unit": "score",
-        "icon": "mdi:heart-broken",
-    },
-    "body_fat_pct": {
-        "key": "body_fat_pct",
-        "name": "Body Fat",
-        "unit": "%",
-        "icon": "mdi:human",
     },
 }

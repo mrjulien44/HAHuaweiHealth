@@ -43,6 +43,31 @@ class HuaweiHealthCalendar(CoordinatorEntity, CalendarEntity):
                     ),
                 ))
 
+        for record in self.coordinator.data.workout_records:
+            if record.start <= end_date and record.end >= start_date:
+                events.append(CalendarEvent(
+                    summary=f"Huawei Health {record.activity_type.title()}",
+                    start=record.start,
+                    end=record.end,
+                    description=(
+                        f"Huawei Health workout record sync: {record.activity_type} "
+                        f"({record.duration_min} min, {record.distance_km} km)"
+                    ),
+                ))
+
+        for activity in self.coordinator.data.daily_activities:
+            item_date = datetime.fromisoformat(activity.date).replace(hour=0, minute=0, second=0, microsecond=0)
+            if item_date.date() >= start_date.date() and item_date.date() <= end_date.date():
+                events.append(CalendarEvent(
+                    summary="Huawei Health Daily Activity",
+                    start=item_date,
+                    end=item_date.replace(hour=23, minute=59, second=59, microsecond=999999),
+                    description=(
+                        f"Huawei Health daily activity sync: {activity.steps} steps, "
+                        f"{activity.distance_km} km, {activity.calories_kcal} kcal"
+                    ),
+                ))
+
         for item in self.coordinator.data.events:
             if item.start <= end_date and item.end >= start_date:
                 events.append(CalendarEvent(

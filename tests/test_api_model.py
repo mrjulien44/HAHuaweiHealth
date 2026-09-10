@@ -117,6 +117,50 @@ class HuaweiHealthApiClientPayloadModelTest(unittest.TestCase):
         unwrapped = client._unwrap_huawei_payload(payload)
         self.assertEqual(unwrapped.get("profile", {}).get("username"), "demo")
 
+    def test_build_data_from_daily_activity_and_workout_records_payload(self):
+        client = HuaweiHealthApiClient(
+            username="demo",
+            password="demo",
+            country="global",
+            region="global",
+            account_id="acct-123",
+        )
+
+        payload = {
+            "profile": {
+                "username": "demo",
+                "account_id": "acct-123",
+            },
+            "daily_activities": [
+                {
+                    "date": "2026-09-10",
+                    "steps": 4567,
+                    "distance_km": 3.5,
+                    "calories_kcal": 280,
+                    "active_minutes": 32,
+                }
+            ],
+            "workout_records": [
+                {
+                    "record_id": "workout-1",
+                    "type": "walk",
+                    "start": "2026-09-10T07:00:00",
+                    "end": "2026-09-10T08:00:00",
+                    "duration_min": 60,
+                    "calories_kcal": 280,
+                    "distance_km": 3.5,
+                    "steps": 4567,
+                }
+            ],
+        }
+
+        data = client._build_huawei_health_data(payload)
+
+        self.assertEqual(len(data.daily_activities), 1)
+        self.assertEqual(data.daily_activities[0].steps, 4567)
+        self.assertEqual(len(data.workout_records), 1)
+        self.assertEqual(data.workout_records[0].activity_type, "walk")
+
     def test_build_data_from_real_payload(self):
         client = HuaweiHealthApiClient(
             username="demo",

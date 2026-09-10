@@ -9,9 +9,32 @@ import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResult
+from homeassistant.helpers import selector
 
 from .api import HuaweiHealthApiClient
 from .const import DOMAIN
+
+COUNTRY_OPTIONS = [
+    "global",
+    "CN",
+    "US",
+    "DE",
+    "FR",
+    "ES",
+    "IT",
+    "UK",
+    "JP",
+    "KR",
+    "IN",
+]
+
+REGION_OPTIONS = [
+    "global",
+    "CN",
+    "EU",
+    "APAC",
+    "US",
+]
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -57,8 +80,20 @@ class HuaweiHealthConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 {
                     vol.Required("username"): str,
                     vol.Required("password"): str,
-                    vol.Required("country", default="global"): str,
-                    vol.Required("region", default="global"): str,
+                    vol.Required("country", default="global"): selector.SelectSelector(
+                        selector.SelectSelectorConfig(
+                            options=COUNTRY_OPTIONS,
+                            mode="dropdown",
+                            custom_value=False,
+                        )
+                    ),
+                    vol.Required("region", default="global"): selector.SelectSelector(
+                        selector.SelectSelectorConfig(
+                            options=REGION_OPTIONS,
+                            mode="dropdown",
+                            custom_value=False,
+                        )
+                    ),
                     vol.Required("account_id"): str,
                     vol.Optional("client_id"): str,
                     vol.Optional("client_secret"): str,
@@ -68,28 +103,41 @@ class HuaweiHealthConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         )
 
     async def async_step_healthkit(self, user_input=None) -> FlowResult:
-        """Show a follow-up Health Kit authorization gate when the app did not grant access."""
+        """Show a Health Kit authorization page with refresh and quit menu options."""
         if self._user_input is None:
             return self.async_abort(reason="unknown")
 
-        if user_input is not None:
-            client = HuaweiHealthApiClient(
-                username=self._user_input["username"],
-                password=self._user_input["password"],
-                country=self._user_input.get("country", "global"),
-                region=self._user_input.get("region", "global"),
-                account_id=self._user_input.get("account_id"),
-                client_id=self._user_input.get("client_id"),
-                client_secret=self._user_input.get("client_secret"),
-            )
-            if await client.async_get_health_app_authorization():
-                return self.async_create_entry(
-                    title=self._user_input["username"],
-                    data=self._user_input,
-                )
-
-        return self.async_show_form(
-            step_id="healthkit",
-            data_schema=vol.Schema({}),
-            errors={"base": "healthkit_not_authorized"},
+        return self.async_show_menu(
+            menu_options=["refresh", "quit"],
         )
+
+    async def async_step_refresh(self, user_input=None) -> FlowResult:
+        """Re-run the Health Kit authorization probe and resume the flow if the app now grants access."""
+        if self._user_input is None:
+            return self.async_abort(reason="unknown")
+
+        client = HuaweiHealthApiClient(
+            username=self._user_input["username"],
+            password=self._user_input["password"],
+            country=self._user_input.get("country", "global"),
+            region=self._user_input.get("region", "global"),
+            account_id=self._user_input.get("account_id"),
+            client_id=self._user_input.get("client_id"),
+            client_secret=self._user_input.get("client_secret"),
+            access_token=self._user_input.get("access_token"),
+            refresh_token=self._user_input.get("refresh_token"),
+        )
+
+        if await client.async_get_health_app_authorization():
+            return self.async_create_entry(
+                title=self._user_input["username"],
+                data=self._user_input,
+            )
+
+        return self.async_show_menu(
+            menu_options=["refresh", "quit"],
+        )
+
+    async def async_step_quit(self, user_input=None) -> FlowResult:
+        """Abort the Health Kit page and end the configuration flow cleanly."""
+        return self.async_abort(reason="user_quit")

@@ -41,16 +41,9 @@ class HuaweiHealthSensor(CoordinatorEntity, SensorEntity):
             "steps": summary.steps,
             "distance": summary.distance_km,
             "calories": summary.calories_kcal,
-            "heart_rate": summary.heart_rate_bpm,
-            "sleep_duration": summary.sleep_duration_min,
             "weight": profile.weight_kg,
             "height": profile.height_cm,
             "bmi": profile.bmi,
-            "sleep_deep": summary.sleep_deep_min,
-            "sleep_shallow": summary.sleep_shallow_min,
-            "sleep_dream": summary.sleep_dream_min,
-            "stress_score": summary.stress_score,
-            "body_fat_pct": summary.body_fat_pct,
         }
         return mapping.get(self._sensor_key)
 
