@@ -20,18 +20,18 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
 
 
 class HuaweiHealthCalendar(CoordinatorEntity, CalendarEntity):
-    """Calendar entity exposing typed Huawei Health activity events."""
+    """Dedicated Home Assistant calendar for Huawei Health activities."""
 
     def __init__(self, coordinator):
         super().__init__(coordinator)
         self._attr_unique_id = f"{DOMAIN}_calendar_{coordinator.client.account_id}"
-        self._attr_name = "Huawei Health Activities"
+        self._attr_name = "Huawei Health"
 
     async def async_get_events(self, start_date: datetime, end_date: datetime):
         """Return events in the requested date window from the typed model object."""
         events = []
         for item in self.coordinator.data.events:
-            if item.start >= start_date and item.end <= end_date:
+            if item.start <= end_date and item.end >= start_date:
                 events.append(CalendarEvent(
                     summary=item.summary,
                     start=item.start,

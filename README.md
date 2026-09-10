@@ -2,6 +2,9 @@
 
 Huawei Health integration for Home Assistant, designed to be installable through HACS.
 
+This custom integration is built to work on Home Assistant and exposes a dedicated
+calendar entity named `Huawei Health` for synchronized activity events.
+
 ## Purpose
 
 This repository contains a Home Assistant custom integration named `huawei_health`.

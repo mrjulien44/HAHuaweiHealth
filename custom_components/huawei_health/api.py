@@ -98,18 +98,6 @@ class HuaweiHealthApiClient:
         )
 
         now = datetime.utcnow()
-        events = [
-            HuaweiHealthActivityEvent(
-                summary="Workout",
-                start=now.replace(hour=7, minute=0, second=0, microsecond=0),
-                end=now.replace(hour=7, minute=0, second=0, microsecond=0) + timedelta(hours=1),
-                description="Huawei Health workout activity",
-                event_type="sport",
-                sport_type="walk",
-                metadata={"source": "huawei_health_demo"},
-            )
-        ]
-
         activities = [
             HuaweiHealthActivity(
                 activity_id="activity_walk_001",
@@ -127,6 +115,26 @@ class HuaweiHealthApiClient:
                 sport_source="huawei_health",
                 metadata={"total_descent": 0, "total_altitude": 0},
             )
+        ]
+
+        events = [
+            HuaweiHealthActivityEvent(
+                summary=f"Huawei Health {activity.activity_type.title()}",
+                start=activity.start,
+                end=activity.end,
+                description=(
+                    f"Huawei Health activity sync: {activity.activity_type} "
+                    f"({activity.duration_min} min, {activity.distance_km} km)"
+                ),
+                event_type="activity",
+                sport_type=activity.activity_type,
+                metadata={
+                    "source": "huawei_health_demo",
+                    "activity_id": activity.activity_id,
+                    "sport_source": activity.sport_source,
+                },
+            )
+            for activity in activities
         ]
 
         return HuaweiHealthData(
