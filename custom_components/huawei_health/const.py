@@ -49,4 +49,52 @@ SENSOR_TYPES = {
         "unit": "min",
         "icon": "mdi:bed",
     },
+    "weight": {
+        "key": "weight",
+        "name": "Weight",
+        "unit": "kg",
+        "icon": "mdi:scale-bathroom",
+    },
+    "height": {
+        "key": "height",
+        "name": "Height",
+        "unit": "cm",
+        "icon": "mdi:ruler",
+    },
+    "bmi": {
+        "key": "bmi",
+        "name": "BMI",
+        "unit": "kg/m²",
+        "icon": "mdi:body",
+    },
+    "sleep_deep": {
+        "key": "sleep_deep",
+        "name": "Sleep Deep",
+        "unit": "min",
+        "icon": "mdi:moon-waning-crescent",
+    },
+    "sleep_shallow": {
+        "key": "sleep_shallow",
+        "name": "Sleep Shallow",
+        "unit": "min",
+        "icon": "mdi:moon-last-quarter",
+    },
+    "sleep_dream": {
+        "key": "sleep_dream",
+        "name": "Sleep Dream",
+        "unit": "min",
+        "icon": "mdi:weather-night",
+    },
+    "stress_score": {
+        "key": "stress_score",
+        "name": "Stress Score",
+        "unit": "score",
+        "icon": "mdi:heart-broken",
+    },
+    "body_fat_pct": {
+        "key": "body_fat_pct",
+        "name": "Body Fat",
+        "unit": "%",
+        "icon": "mdi:human",
+    },
 }

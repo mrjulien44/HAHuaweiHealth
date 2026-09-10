@@ -81,6 +81,29 @@ class HuaweiHealthApiClient:
                     "step_distance": 6700,
                     "average_heart_rate": 72,
                 },
+                "body_composition_history": [
+                    {
+                        "date": datetime.utcnow().date().isoformat(),
+                        "weight_kg": 75.0,
+                        "height_cm": 172.0,
+                        "bmi": 24.2,
+                        "body_fat_pct": 22.1,
+                    }
+                ],
+                "sleep_depth_history": [
+                    {
+                        "date": datetime.utcnow().date().isoformat(),
+                        "deep_min": 170,
+                        "shallow_min": 180,
+                        "dream_min": 70,
+                    }
+                ],
+                "stress_history": [
+                    {
+                        "date": datetime.utcnow().date().isoformat(),
+                        "stress_score": 68,
+                    }
+                ],
             },
         )
 

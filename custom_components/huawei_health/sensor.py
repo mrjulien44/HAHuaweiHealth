@@ -36,20 +36,33 @@ class HuaweiHealthSensor(CoordinatorEntity, SensorEntity):
     @property
     def native_value(self):
         summary = self.coordinator.data.summary
+        profile = self.coordinator.data.profile
         mapping = {
             "steps": summary.steps,
             "distance": summary.distance_km,
             "calories": summary.calories_kcal,
             "heart_rate": summary.heart_rate_bpm,
             "sleep_duration": summary.sleep_duration_min,
+            "weight": profile.weight_kg,
+            "height": profile.height_cm,
+            "bmi": profile.bmi,
+            "sleep_deep": summary.sleep_deep_min,
+            "sleep_shallow": summary.sleep_shallow_min,
+            "sleep_dream": summary.sleep_dream_min,
+            "stress_score": summary.stress_score,
+            "body_fat_pct": summary.body_fat_pct,
         }
         return mapping.get(self._sensor_key)
 
     @property
     def extra_state_attributes(self):
+        extra = self.coordinator.data.summary.extra or {}
         return {
             "source": "huawei_health",
             "account_id": self.coordinator.client.account_id,
             "measurement_date": self.coordinator.data.summary.measurement_date,
             "gender": self.coordinator.data.profile.gender,
+            "body_composition_history": extra.get("body_composition_history", []),
+            "sleep_depth_history": extra.get("sleep_depth_history", []),
+            "stress_history": extra.get("stress_history", []),
         }
