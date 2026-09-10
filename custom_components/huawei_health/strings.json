@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "Connect Huawei Health",
-        "description": "Provide the mandatory account information needed to connect to Huawei Health.",
+        "description": "Provide the mandatory account information needed to connect to Huawei Health. Before continuing, open the Huawei Health application and allow Health Kit access for your activity, profile, sleep, stress, and body-composition data.",
         "data": {
           "username": "Huawei Health username",
           "password": "Huawei Health password",
@@ -11,12 +11,17 @@
           "region": "Region",
           "account_id": "Account ID"
         }
+      },
+      "healthkit": {
+        "title": "Huawei Health Health Kit permission",
+        "description": "Health Kit access is not yet authorized in the Huawei Health application. Open the Huawei Health application, allow Health Kit access for the requested data scopes, and then continue the configuration."
       }
     },
     "error": {
       "cannot_connect": "Failed to connect",
       "invalid_auth": "Invalid authentication",
-      "unknown": "Unexpected error"
+      "unknown": "Unexpected error",
+      "healthkit_not_authorized": "Health Kit access is not authorized in the Huawei Health application"
     },
     "abort": {
       "already_configured": "This account is already configured"

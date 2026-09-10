@@ -28,8 +28,21 @@ class HuaweiHealthCalendar(CoordinatorEntity, CalendarEntity):
         self._attr_name = "Huawei Health"
 
     async def async_get_events(self, start_date: datetime, end_date: datetime):
-        """Return events in the requested date window from the typed model object."""
+        """Return Home Assistant calendar events from the activity model and event model."""
         events = []
+
+        for activity in self.coordinator.data.activities:
+            if activity.start <= end_date and activity.end >= start_date:
+                events.append(CalendarEvent(
+                    summary=f"Huawei Health {activity.activity_type.title()}",
+                    start=activity.start,
+                    end=activity.end,
+                    description=(
+                        f"Huawei Health activity sync: {activity.activity_type} "
+                        f"({activity.duration_min} min, {activity.distance_km} km)"
+                    ),
+                ))
+
         for item in self.coordinator.data.events:
             if item.start <= end_date and item.end >= start_date:
                 events.append(CalendarEvent(
@@ -38,6 +51,7 @@ class HuaweiHealthCalendar(CoordinatorEntity, CalendarEntity):
                     end=item.end,
                     description=item.description,
                 ))
+
         return events
 
     async def async_create_event(self, summary: str, start_date_time: datetime, end_date_time: datetime, description: str | None = None):

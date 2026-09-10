@@ -5,6 +5,11 @@ Huawei Health integration for Home Assistant, designed to be installable through
 This custom integration is built to work on Home Assistant and exposes a dedicated
 calendar entity named `Huawei Health` for synchronized activity events.
 
+Before using the integration, open the Huawei Health application and allow Health Kit
+access for the data categories you want to synchronize. Without that Huawei Health
+application authorization, the integration cannot read the health profile, activity,
+body-composition, sleep, or stress records.
+
 ## Purpose
 
 This repository contains a Home Assistant custom integration named `huawei_health`.
