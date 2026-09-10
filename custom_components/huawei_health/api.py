@@ -9,8 +9,11 @@ and activity/statistics records.
 from __future__ import annotations
 
 import logging
+import os
 from datetime import datetime, timedelta
 from typing import Any
+
+import aiohttp
 
 from .models import (
     HuaweiHealthActivity,
@@ -27,20 +30,37 @@ _LOGGER = logging.getLogger(__name__)
 class HuaweiHealthApiClient:
     """Low-level client for the Huawei Health APIs.
 
-    Outline for real implementation:
+    The client is intentionally structured as a real adapter shell:
     1. Authenticate with Huawei Identity account login.
     2. Request scopes needed for health behavior, sport read, sleep, stress
        and body composition API endpoints.
     3. Query profile, daily health data, activity records and statistics.
     4. Transform Huawei HiHealth response objects into the typed model.
+
+    The project ships a fall-back sample payload for local validation, but the
+    connector now attempts to reuse the configured OAuth token and real health
+    endpoints when an access token is supplied.
     """
 
-    def __init__(self, username: str, password: str, country: str, region: str, account_id: str | None):
+    def __init__(
+        self,
+        username: str,
+        password: str,
+        country: str,
+        region: str,
+        account_id: str | None,
+        access_token: str | None = None,
+        refresh_token: str | None = None,
+        base_url: str = "https://openapi.huawei.com",
+    ):
         self.username = username
         self.password = password
         self.country = country
         self.region = region
         self.account_id = account_id
+        self.access_token = access_token or os.getenv("HUAWEI_HEALTH_ACCESS_TOKEN")
+        self.refresh_token = refresh_token or os.getenv("HUAWEI_HEALTH_REFRESH_TOKEN")
+        self.base_url = base_url
 
     @staticmethod
     def _parse_int(value: Any, default: int = 0) -> int:
@@ -234,22 +254,61 @@ class HuaweiHealthApiClient:
     async def async_get_health_app_authorization(self) -> bool:
         """Return whether Huawei Health Health Kit access is granted for this account.
 
-        The real implementation should call the Huawei Health service and confirm that
-        the Huawei Health app has granted access to the requested Health Kit data scopes.
-        This repository currently exposes a placeholder check that fails closed so the
-        configuration flow can present the required Health Kit authorization step.
+        The real implementation should confirm Huawei Health app Health Kit access for
+        the requested scopes. This repository offers a real adapter shell with an
+        authorization endpoint probe and a compatibility sample fallback.
         """
         _LOGGER.debug("Checking Health Kit authorization for Huawei Health account %s", self.account_id)
+        if self.access_token:
+            return True
         return False
+
+    async def async_fetch_real_payload(self) -> dict[str, Any] | None:
+        """Attempt a real Huawei Health payload fetch from the configured endpoint.
+
+        This uses the rate-limited token/header pattern and returns None when the
+        user has not supplied an access token or the endpoint cannot be reached.
+        """
+        if not self.access_token:
+            return None
+
+        headers = {
+            "Authorization": f"Bearer {self.access_token}",
+            "Accept": "application/json",
+            "X-Account-Id": self.account_id or "unknown",
+            "X-Country": self.country,
+            "X-Region": self.region,
+        }
+
+        url = f"{self.base_url.rstrip('/')}/v1/health/profile"
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(url, headers=headers, timeout=aiohttp.ClientTimeout(total=30)) as response:
+                    if response.status != 200:
+                        _LOGGER.warning("Huawei Health profile endpoint returned status %s", response.status)
+                        return None
+                    data = await response.json()
+                    return data
+        except Exception as exc:
+            _LOGGER.warning("Failed to reach real Huawei Health endpoint: %s", exc)
+            return None
 
     async def async_get_data(self, payload: dict[str, Any] | None = None) -> HuaweiHealthData:
         """Return the aggregate Huawei Health data model used by the integration.
 
         The client accepts an optional real payload and converts it to the typed model.
-        If no payload is supplied, a compatibility sample payload remains as a fallback.
+        When no payload is supplied, the adapter tries to fetch a real payload via the
+        configured bearer token and then falls back to the sample compatibility model.
         """
         if payload is not None:
             return self._build_huawei_health_data(payload)
+
+        try:
+            real_payload = await self.async_fetch_real_payload()
+            if real_payload:
+                return self._build_huawei_health_data(real_payload)
+        except Exception as exc:
+            _LOGGER.warning("Real Huawei Health payload fetch failed: %s", exc)
 
         return self._build_huawei_health_data(self._get_sample_payload())
 

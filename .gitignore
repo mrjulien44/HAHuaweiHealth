@@ -71,6 +71,15 @@ instance/
 # Sphinx documentation
 docs/_build/
 
+# Local credential and test-only payload files
+.env
+.env.*
+!.env.example
+secrets.yaml
+*.test.json
+*.local.json
+huawei_health_credentials.*
+
 # PyBuilder
 .pybuilder/
 target/

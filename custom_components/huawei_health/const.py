@@ -1,7 +1,7 @@
 """Constants for the Huawei Health custom component."""
 
 DOMAIN = "huawei_health"
-PLATFORMS = ["sensor", "calendar"]
+PLATFORMS = ["sensor", "calendar", "button"]
 
 DEFAULT_NAME = "Huawei Health"
 DEFAULT_REGION = "global"
