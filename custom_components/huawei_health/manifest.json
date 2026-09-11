@@ -8,6 +8,7 @@
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/mrjulien44/HAHuaweiHealth/issues",
   "loggers": ["custom_components.huawei_health"],
+  "quality_scale": "bronze",
   "requirements": ["aiohttp>=3.9.0"],
   "version": "0.1.0"
 }
