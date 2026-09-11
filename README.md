@@ -6,10 +6,13 @@
 
 Huawei Health integration for Home Assistant, designed to be installable through HACS.
 
-> Add this custom integration to Home Assistant directly using the HACS flow:
-> https://my.home-assistant.io/redirect/hacs_repository/?repository=mrjulien44/HAHuaweiHealth&category=integration
+> HACS-ready custom integration repository for Huawei Health. Install via the HACS store and add the integration from the Home Assistant UI.
+> Repository: https://github.com/mrjulien44/HAHuaweiHealth
+> HACS install shortcut: https://my.home-assistant.io/redirect/hacs_repository/?repository=mrjulien44/HAHuaweiHealth&category=integration
 
 > For a code coverage badge, the repository is prepared for Codecov integration.
+
+> Important: before using the integration, open the Huawei Health application and allow Health Kit access for the health data categories you want to synchronize. Without the Huawei Health app authorization, the integration cannot read the requested records.
 
 This custom integration is built to work on Home Assistant and exposes a dedicated
 calendar entity named `Huawei Health` for synchronized activity events.
