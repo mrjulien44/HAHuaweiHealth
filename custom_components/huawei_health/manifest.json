@@ -1,13 +1,13 @@
 {
   "domain": "huawei_health",
   "name": "Huawei Health",
-  "version": "0.1.0",
-  "documentation": "https://github.com/mrjulien44/HAHuaweiHealth",
-  "issue_tracker": "https://github.com/mrjulien44/HAHuaweiHealth/issues",
-  "dependencies": [],
   "codeowners": ["@mrjulien44"],
-  "requirements": ["aiohttp>=3.9.0"],
   "config_flow": true,
+  "dependencies": [],
+  "documentation": "https://github.com/mrjulien44/HAHuaweiHealth",
   "iot_class": "cloud_polling",
-  "loggers": ["custom_components.huawei_health"]
+  "issue_tracker": "https://github.com/mrjulien44/HAHuaweiHealth/issues",
+  "loggers": ["custom_components.huawei_health"],
+  "requirements": ["aiohttp>=3.9.0"],
+  "version": "0.1.0"
 }
