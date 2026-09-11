@@ -1,6 +1,15 @@
 # HAHuaweiHealth
 
+![Validation](https://github.com/mrjulien44/HAHuaweiHealth/actions/workflows/validate.yml/badge.svg)
+![Hassfest](https://github.com/mrjulien44/HAHuaweiHealth/actions/workflows/validate.yml/badge.svg)
+![Coverage](https://img.shields.io/codecov/c/github/mrjulien44/HAHuaweiHealth)
+
 Huawei Health integration for Home Assistant, designed to be installable through HACS.
+
+> Add this custom integration to Home Assistant directly using the HACS flow:
+> https://my.home-assistant.io/redirect/hacs_repository/?repository=mrjulien44/HAHuaweiHealth&category=integration
+
+> For a code coverage badge, the repository is prepared for Codecov integration.
 
 This custom integration is built to work on Home Assistant and exposes a dedicated
 calendar entity named `Huawei Health` for synchronized activity events.
@@ -20,6 +29,11 @@ activities, statistics, and profile information.
 ## HACS installation
 
 This repository is intended to be used as a custom repository in HACS:
+
+You can install it with one click from the Home Assistant UI via My Home Assistant:
+
+https://my.home-assistant.io/redirect/hacs_repository/?repository=mrjulien44/HAHuaweiHealth&category=integration
+
 
 1. Add this repository to HACS as a custom integration repository.
 2. Install the `Huawei Health` integration from the HACS store.
